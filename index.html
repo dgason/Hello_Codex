@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A tiny, original canvas platformer. Guide Pip through the floating gardens and gather sky seeds.">
+  <title>Pip & the Sky Seeds</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
+    <header><div class="brand"><span class="brand-mark">✦</span><div><h1>Pip & the Sky Seeds</h1><p>A little leap into the blue.</p></div></div><span class="edition">A TINY CANVAS ADVENTURE</span></header>
+    <section class="game-shell" aria-label="Pip platform game">
+      <div class="toolbar"><div class="level"><span class="dot"></span>01 <span class="separator">/</span> The Floating Garden</div><div class="stats"><span>SEEDS <strong id="score">000</strong></span><span>LIVES <strong id="lives" aria-label="3 lives">♥ ♥ ♥</strong></span><button id="restart" title="Restart the adventure">↻ <span>Restart</span></button></div></div>
+      <div class="stage">
+        <canvas id="game" width="960" height="540" tabindex="0" aria-label="Move Pip with arrows or A and D. Jump with Space or Up. Collect seeds, avoid prickles, and reach the beacon.">Your browser needs canvas support to play.</canvas>
+        <div id="overlay" class="overlay" hidden><div class="message"><span id="eyebrow">GARDEN COMPLETE</span><h2 id="message-title">A sky full of possibility.</h2><p id="message-text"></p><button id="play-again">Play again <span>↗</span></button></div></div>
+      </div>
+      <footer><span><kbd>←</kbd><kbd>→</kbd> or <kbd>A</kbd><kbd>D</kbd> Move</span><span><kbd>Space</kbd> or <kbd>↑</kbd> Jump</span><span class="mission"><span>✦</span> Gather seeds. Dodge prickles. Find the beacon.</span></footer>
+    </section>
+    <div class="below"><span>SMALL HERO. BIG SKY.</span><span>Take your time. Make the leap.</span></div>
+    <p id="status" class="sr-only" aria-live="polite"></p>
+  </main>
+  <script src="js/level.js"></script>
+  <script src="js/physics.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
