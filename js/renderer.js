@@ -38,6 +38,14 @@ SkyGame.Renderer = class {
     this.ellipse(0,0,17,20,'#fff2b231');c.fillStyle='#f0b846';c.beginPath();c.moveTo(0,-13);c.quadraticCurveTo(17,-1,0,14);c.quadraticCurveTo(-17,-1,0,-13);c.fill();
     c.strokeStyle='#ffec9e';c.lineWidth=2;c.beginPath();c.moveTo(-2,-7);c.quadraticCurveTo(-7,0,-2,6);c.stroke();c.restore();
   }
+  powerUp(item,t) {
+    if(item.collected)return;
+    const x=item.x+item.w/2,y=item.y+item.h/2+Math.sin(t*3)*4;
+    this.ellipse(x,y,24,27,'#b291f04d');
+    this.rounded(x-15,y-18,30,36,10,'#7955bc');
+    this.text('⇈',x,y+7,25,'#fff4ff','center');
+    this.text('DOUBLE JUMP',x,y-34,10,'#6842ab','center');
+  }
   player(p,t) {
     if(p.invincible>0 && Math.floor(t*12)%2===0)return;
     const c=this.ctx,walk=p.grounded?Math.sin(t*18)*Math.min(1,Math.abs(p.vx)/100):0;
@@ -74,7 +82,14 @@ SkyGame.Renderer = class {
     this.text('THE FLOATING GARDEN',65,215,11,'#558c87');this.text('Every adventure starts with a leap.',65,241,17,'#37766e');
     this.text('PIP',89,player.x<130?376:390,10,'#427d72','center');
     this.text('Mind the gap  ↗',553,402,12,'#427d72');
+    this.powerUp(level.powerUp,t);
     level.seeds.forEach((s,i)=>this.seed(s,t,i));level.enemies.forEach(e=>this.enemy(e,t));this.goal(level.goal,t,game.state==='won');this.player(player,t);
+    if(game.powerUpFlash>0) {
+      const progress=1-game.powerUpFlash;
+      c.save();c.globalAlpha=game.powerUpFlash;c.strokeStyle='#aa73e6';c.lineWidth=5;
+      c.beginPath();c.arc(player.x+17,player.y+20,24+progress*65,0,Math.PI*2);c.stroke();
+      this.text('DOUBLE JUMP!',player.x+17,player.y-25-progress*30,16,'#6842ab','center');c.restore();
+    }
     for(const p of particles){c.globalAlpha=Math.max(0,p.life/p.maxLife);this.rounded(p.x,p.y,p.size,p.size,2,p.color);}c.globalAlpha=1;c.restore();
     // A quiet progress trail follows the journey along the bottom of the sky.
     this.rounded(398,518,164,3,2,'#ffffff65');this.rounded(398,518,164*Math.min(1,player.x/level.goal.x),3,2,'#387e6c');

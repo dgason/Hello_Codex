@@ -57,3 +57,9 @@ node tests/run.cjs
 For the real canvas and DOM checks, open <http://127.0.0.1:8000/tests/> while the server is running (or open `tests/index.html` directly). The test page exercises the same game code, reports PASS/FAIL, and resets the game afterward.
 
 The eight shared scenarios cover movement and world boundaries, gravity, jumping onto raised platforms, underside/side collisions, single-use collectibles, enemy patrols and damage, pits/three-life game over/restart, and a continuous route from spawn to level completion without teleporting. The route test finishes with all three lives and checks the celebration and result overlay. These checks passed in Node and the browser; the browser console had no warnings or errors. Automated screenshot capture was unavailable in the testing environment.
+
+## Double-jump feature
+
+Collect the purple ⇈ power-up near the first seed to unlock one additional jump while airborne. Press Space or Up again to use it; holding the key does not trigger it repeatedly. Landing restores the extra jump. The purple HUD badge shows when the ability is active. It persists across lost lives until Restart or Play again begins a new run. The pickup adds no score.
+
+Four additional regression checks cover single-jump behavior before pickup, the pickup/HUD effect, the two-jump limit and landing reset, and persistence/reset across lives and runs.

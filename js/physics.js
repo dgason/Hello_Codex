@@ -6,8 +6,13 @@ SkyGame.Physics = (() => {
     p.vx = input.axis * SPEED;
     if (input.axis) p.facing = input.axis;
     p.coyote = p.grounded ? .10 : Math.max(0,p.coyote-dt);
+    if (p.grounded) p.airJumpUsed = false;
     p.jumpBuffer = input.jump ? .12 : Math.max(0,p.jumpBuffer-dt);
-    if (p.jumpBuffer > 0 && p.coyote > 0) {
+    const groundJump = p.jumpBuffer > 0 && p.coyote > 0;
+    // Only a fresh press can consume the extra airborne jump.
+    const airJump = input.jump && !p.grounded && p.coyote === 0 && p.doubleJump && !p.airJumpUsed;
+    if (groundJump || airJump) {
+      if (airJump) p.airJumpUsed = true;
       p.vy = -JUMP; p.grounded = false; p.coyote = 0; p.jumpBuffer = 0;
     }
     p.x += p.vx * dt;
@@ -19,7 +24,7 @@ SkyGame.Physics = (() => {
     p.vy = Math.min(p.vy + GRAVITY * dt, 950);
     p.y += p.vy * dt; p.grounded = false;
     for (const tile of platforms) if (overlaps(p,tile)) {
-      if (p.vy > 0) {p.y=tile.y-p.h;p.grounded=true;}
+      if (p.vy > 0) {p.y=tile.y-p.h;p.grounded=true;p.airJumpUsed=false;}
       else if (p.vy < 0) p.y=tile.y+tile.h;
       p.vy = 0;
     }

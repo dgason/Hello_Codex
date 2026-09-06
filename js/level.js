@@ -14,7 +14,7 @@ SkyGame.createLevel = function () {
     [1390,320],[1530,403],[1630,315],[1695,315],[1850,240],[1915,240],
     [2115,320],[2220,400],[2320,300],[2390,300],[2530,220],[2600,220],[2710,390]]
     .map(([x,y])=>({x,y,w:22,h:28,collected:false}));
-  return {width:2940,platforms,seeds,spawn:{x:72,y:410},goal:{x:2800,y:337,w:65,h:115},
+  return {powerUp:{x:215,y:395,w:30,h:36,collected:false},width:2940,platforms,seeds,spawn:{x:72,y:410},goal:{x:2800,y:337,w:65,h:115},
     enemies:[{x:1080,y:420,w:36,h:32,min:1050,max:1290,speed:65,direction:1},
       {x:1880,y:420,w:36,h:32,min:1880,max:1940,speed:45,direction:-1}]};
 };

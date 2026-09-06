@@ -4,6 +4,30 @@
   const assert=(condition,message)=>{if(!condition)throw new Error(message);};
   const step=(frames,axis=0,jump=false)=>{for(let i=0;i<frames;i++)game.update(1/120,{axis,jump:jump&&i===0});};
   function test(name,fn){try{game.reset();step(2);fn();game.renderer.draw(game);results.push(`PASS ${name}`);}catch(e){results.push(`FAIL ${name}: ${e.message}`);}}
+  test('Single jump before pickup rejects an airborne press',()=>{
+    step(20,0,true);const velocity=game.player.vy;
+    step(1,0,true);assert(game.player.vy>velocity,'airborne press must not jump');
+    assert(!game.doubleJump,'ability starts inactive');
+  });
+  const collectPowerUp=()=>{step(52,1);assert(game.doubleJump&&game.level.powerUp.collected,'pickup');game.player.x=100;};
+  test('Pickup activates HUD and effect without awarding seed points',()=>{
+    collectPowerUp();assert(!document.getElementById('double-jump').hidden,'HUD active');
+    assert(game.powerUpFlash>0,'pickup effect');assert(game.score===10,'seed score unchanged');
+  });
+  test('Extra jump works, third jump is rejected, landing resets it',()=>{
+    collectPowerUp();step(20,0,true);step(1,0,true);
+    assert(game.player.vy < -590&&game.player.airJumpUsed,'extra jump');
+    step(20);const velocity=game.player.vy;step(1,0,true);
+    assert(game.player.vy>velocity,'reject third jump');
+    step(150);assert(game.player.grounded&&!game.player.airJumpUsed,'landing reset');
+    step(20,0,true);step(1,0,true);assert(game.player.vy < -590,'second jump after landing');
+  });
+  test('Power-up persists through death and resets on a new run',()=>{
+    collectPowerUp();game.player.x=650;game.player.y=650;step(1);
+    assert(game.lives===2&&game.player.doubleJump&&game.level.powerUp.collected,'persist on respawn');
+    game.reset();assert(!game.doubleJump&&!game.player.doubleJump&&!game.level.powerUp.collected,'new run');
+    assert(document.getElementById('double-jump').hidden,'HUD reset');
+  });
   test('Gravity, ground landing, left/right movement and world boundary',()=>{
     step(60);assert(game.player.y===410&&game.player.grounded,'ground landing');
     step(30,1);assert(game.player.x>130,'right');step(70,-1);assert(game.player.x===0,'left boundary');

@@ -8,11 +8,12 @@ SkyGame.Game = class {
   }
   reset() {
     this.level=SkyGame.createLevel();this.lives=3;this.score=0;this.camera=0;this.time=0;
+    this.doubleJump=false;this.powerUpFlash=0;
     this.state='playing';this.particles=[];this.keys.clear();this.jumpQueued=false;
     this.overlay.hidden=true;this.spawn();this.updateHud();
   }
   spawn() {
-    this.player={...this.level.spawn,w:34,h:42,vx:0,vy:0,facing:1,grounded:false,coyote:0,jumpBuffer:0,invincible:1.4};
+    this.player={...this.level.spawn,w:34,h:42,vx:0,vy:0,facing:1,grounded:false,coyote:0,jumpBuffer:0,invincible:1.4,doubleJump:this.doubleJump,airJumpUsed:false};
     this.camera=0;
   }
   bindInput() {
@@ -31,6 +32,7 @@ SkyGame.Game = class {
     this.canvas.addEventListener('pointerdown',()=>this.canvas.focus());
   }
   updateHud() {
+    document.getElementById('double-jump').hidden=!this.doubleJump;
     this.scoreNode.textContent=String(this.score).padStart(3,'0');
     this.livesNode.textContent='♥ '.repeat(this.lives)+'♡ '.repeat(3-this.lives);
     this.livesNode.setAttribute('aria-label',`${this.lives} lives`);
@@ -58,7 +60,7 @@ SkyGame.Game = class {
     this.endDelay=won?1.25:.35;
   }
   update(dt,input) {
-    this.time+=dt;
+    this.time+=dt;this.powerUpFlash=Math.max(0,this.powerUpFlash-dt);
     for(const p of this.particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=450*dt;p.life-=dt;}
     this.particles=this.particles.filter(p=>p.life>0);
     if(this.state!=='playing') {
@@ -71,6 +73,12 @@ SkyGame.Game = class {
     for(const e of this.level.enemies)if(this.player.invincible===0 && SkyGame.Physics.overlaps(this.player,e)){this.loseLife();return;}
     for(const seed of this.level.seeds)if(!seed.collected && SkyGame.Physics.overlaps(this.player,seed)){
       seed.collected=true;this.score+=10;this.burst(seed.x+11,seed.y+14,10);this.updateHud();
+    }
+    const powerUp=this.level.powerUp;
+    if(!powerUp.collected && SkyGame.Physics.overlaps(this.player,powerUp)) {
+      powerUp.collected=true;this.doubleJump=true;this.player.doubleJump=true;
+      this.powerUpFlash=1;this.updateHud();
+      this.status.textContent='Double-jump active! Press jump again in the air. Lasts until you restart.';
     }
     this.camera=Math.max(0,Math.min(this.level.width-960,this.player.x-320));
     if(SkyGame.Physics.overlaps(this.player,this.level.goal))this.finish(true);
