@@ -74,6 +74,9 @@ SkyGame.Game = class {
     for(const seed of this.level.seeds)if(!seed.collected && SkyGame.Physics.overlaps(this.player,seed)){
       seed.collected=true;this.score+=10;this.burst(seed.x+11,seed.y+14,10);this.updateHud();
     }
+    for(const coin of this.level.coins)if(!coin.collected && SkyGame.Physics.overlaps(this.player,coin)){
+      coin.collected=true;
+    }
     const powerUp=this.level.powerUp;
     if(!powerUp.collected && SkyGame.Physics.overlaps(this.player,powerUp)) {
       powerUp.collected=true;this.doubleJump=true;this.player.doubleJump=true;

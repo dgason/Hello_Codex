@@ -38,6 +38,14 @@ SkyGame.Renderer = class {
     this.ellipse(0,0,17,20,'#fff2b231');c.fillStyle='#f0b846';c.beginPath();c.moveTo(0,-13);c.quadraticCurveTo(17,-1,0,14);c.quadraticCurveTo(-17,-1,0,-13);c.fill();
     c.strokeStyle='#ffec9e';c.lineWidth=2;c.beginPath();c.moveTo(-2,-7);c.quadraticCurveTo(-7,0,-2,6);c.stroke();c.restore();
   }
+  coin(coin) {
+    if(coin.collected)return;
+    const x=coin.x+12,y=coin.y+12;
+    this.ellipse(x,y,12,12,'#bc7b28');
+    this.ellipse(x,y,10,10,'#ffd66b');
+    this.ellipse(x,y,7,7,'#edb744');
+    this.rounded(x-1.5,y-5,3,10,1,'#fff2bb');
+  }
   powerUp(item,t) {
     if(item.collected)return;
     const x=item.x+item.w/2,y=item.y+item.h/2+Math.sin(t*3)*4;
@@ -83,6 +91,7 @@ SkyGame.Renderer = class {
     this.text('PIP',89,player.x<130?376:390,10,'#427d72','center');
     this.text('Mind the gap  ↗',553,402,12,'#427d72');
     this.powerUp(level.powerUp,t);
+    level.coins.forEach(coin=>this.coin(coin));
     level.seeds.forEach((s,i)=>this.seed(s,t,i));level.enemies.forEach(e=>this.enemy(e,t));this.goal(level.goal,t,game.state==='won');this.player(player,t);
     if(game.powerUpFlash>0) {
       const progress=1-game.powerUpFlash;
