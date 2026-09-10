@@ -1,6 +1,6 @@
 /* Fixed-step, axis-separated collision keeps the simulation predictable. */
 SkyGame.Physics = (() => {
-  const GRAVITY = 1550, SPEED = 265, JUMP = 610;
+  const GRAVITY = 1550, SPEED = 265, JUMP = 654;
   const overlaps = (a,b) => a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
   function movePlayer(p, input, platforms, width, dt) {
     p.vx = input.axis * SPEED;
