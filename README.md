@@ -22,7 +22,7 @@ Then open <http://127.0.0.1:8000>. Leave the terminal running while you play; Ct
 
 Click the game if keyboard focus is elsewhere. A keyboard is required; touch controls are not included.
 
-Collect seeds for 10 points each. Avoid both purple prickles: contact, even from above, costs a life. Falling into a pit also costs one life. You begin with three lives and respawn at the start with brief blinking protection. Collected seeds and points are retained between lives, so each seed can only score once. A full restart resets everything.
+The score in the upper-right starts at 0. Collect seeds for 10 points each and coins for 100 points each. Avoid both purple prickles: contact, even from above, costs a life. Falling into a pit also costs one life. You begin with three lives and respawn at the start with brief blinking protection. Collected seeds, coins, and points are retained between lives, so each collectible can only score once. A full restart resets everything.
 
 Reach the beacon at the far right to complete the level. Collecting every seed is optional. Platforms are solid on their tops, sides, and undersides, so start jumps beside raised platforms to land on them. The level includes three gaps, eight raised platforms, 24 seeds, and two patrolling enemies.
 

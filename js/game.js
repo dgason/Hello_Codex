@@ -33,7 +33,7 @@ SkyGame.Game = class {
   }
   updateHud() {
     document.getElementById('double-jump').hidden=!this.doubleJump;
-    this.scoreNode.textContent=String(this.score).padStart(3,'0');
+    this.scoreNode.textContent=String(this.score);
     this.livesNode.textContent='♥ '.repeat(this.lives)+'♡ '.repeat(3-this.lives);
     this.livesNode.setAttribute('aria-label',`${this.lives} lives`);
   }
@@ -54,7 +54,7 @@ SkyGame.Game = class {
     if(won)this.burst(this.level.goal.x+32,this.level.goal.y+25,110,true);
     document.getElementById('eyebrow').textContent=won?'GARDEN COMPLETE':'A LITTLE TUMBLE';
     document.getElementById('message-title').textContent=won?'You lit up the garden!':'Another sky awaits.';
-    document.getElementById('message-text').textContent=won?`${this.score} points · ${this.score/10} of ${this.level.seeds.length} seeds · ${this.lives} lives left`:'Pip is ready for another adventure. Try again!';
+    document.getElementById('message-text').textContent=won?`${this.score} points · ${this.level.seeds.filter(seed=>seed.collected).length} of ${this.level.seeds.length} seeds · ${this.lives} lives left`:'Pip is ready for another adventure. Try again!';
     this.status.textContent=won?'Level complete!':'Game over.';
     // Let the beacon and confetti play before revealing the result.
     this.endDelay=won?1.25:.35;
@@ -75,7 +75,7 @@ SkyGame.Game = class {
       seed.collected=true;this.score+=10;this.burst(seed.x+11,seed.y+14,10);this.updateHud();
     }
     for(const coin of this.level.coins)if(!coin.collected && SkyGame.Physics.overlaps(this.player,coin)){
-      coin.collected=true;
+      coin.collected=true;this.score+=100;this.updateHud();
     }
     const powerUp=this.level.powerUp;
     if(!powerUp.collected && SkyGame.Physics.overlaps(this.player,powerUp)) {

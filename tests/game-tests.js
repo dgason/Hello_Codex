@@ -43,6 +43,23 @@
     step(45,1);assert(game.score===10,'collect seed');step(30);assert(game.score===10,'no duplicate collection');
     game.player.x=650;game.player.y=650;step(1);assert(game.lives===2&&game.score===10&&game.level.seeds[0].collected,'preserve seed after death');
   });
+  test('Coins award 100 immediately, only once, and persist across lost lives',()=>{
+    assert(game.score===0&&game.scoreNode.textContent==='0','initial score display');
+    const coin=game.level.coins[0];
+    const collect=()=>{Object.assign(game.player,{x:coin.x,y:coin.y,vx:0,vy:0});step(1);};
+    collect();assert(coin.collected&&game.score===100&&game.scoreNode.textContent==='100','immediate coin score');
+    step(5);assert(game.score===100,'no duplicate points');
+    game.player.y=650;step(1);
+    assert(game.lives===2&&coin.collected&&game.score===100&&game.scoreNode.textContent==='100','persist after death');
+    collect();assert(game.score===100,'collected coin cannot score after respawn');
+    const second=game.level.coins[1];Object.assign(game.player,{x:second.x,y:second.y,vx:0,vy:0});step(1);
+    assert(second.collected&&game.score===200&&game.scoreNode.textContent==='200','each coin adds 100');
+    game.finish(true);
+    assert(document.getElementById('message-text').textContent.includes('200 points · 0 of'),'coin points do not count as seeds');
+    game.reset();
+    assert(game.score===0&&game.scoreNode.textContent==='0'&&game.level.coins.every(c=>!c.collected),'full restart resets coins and score');
+    collect();assert(game.score===100&&game.level.coins[0].collected,'coin scores again on new run');
+  });
   test('Patrol reverses direction at its bounds',()=>{
     const e=game.level.enemies[0];e.x=e.max;e.direction=1;step(1);assert(e.direction===-1&&e.x===e.max,'reverse');
   });
