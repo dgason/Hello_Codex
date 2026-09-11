@@ -77,6 +77,30 @@
     const e=game.level.enemies[0];Object.assign(game.player,{x:e.x,y:e.y-10,invincible:0});step(1);
     assert(game.lives===2&&game.player.x===72,'enemy damage');step(20);assert(game.lives===2,'one life only');
   });
+  test('New platform enemy stays on its platform and reverses at both ends',()=>{
+    const enemy=game.level.enemies[2],platform=game.level.platforms[4];
+    assert(enemy.y+enemy.h===platform.y,'feet rest on platform');
+    const directions=new Set();
+    for(let i=0;i<600;i++){
+      step(1);directions.add(enemy.direction);
+      assert(enemy.x>=platform.x&&enemy.x+enemy.w<=platform.x+platform.w,'patrol stays on platform');
+    }
+    assert(directions.size===2,'patrol travels in both directions');
+  });
+  test('New enemy contact respawns Pip while preserving collected coins and score',()=>{
+    const coin=game.level.coins[0];
+    Object.assign(game.player,{x:coin.x,y:coin.y,vx:0,vy:0});step(1);
+    assert(coin.collected&&game.score===100,'collect coin before contact');
+    const enemy=game.level.enemies[2];
+    Object.assign(game.player,{x:enemy.x-35,y:enemy.y-10,vx:0,vy:0,invincible:0});step(1,1);
+    assert(game.lives===2&&game.state==='playing'&&game.player.x===game.level.spawn.x,'restart attempt');
+    assert(game.player.invincible>0&&game.camera===0,'safe respawn');
+    assert(coin.collected&&game.score===100&&game.scoreNode.textContent==='100','keep coin and score');
+    step(30);assert(game.lives===2,'no repeated damage after respawn');
+    Object.assign(game.player,{x:coin.x,y:coin.y,vx:0,vy:0});step(1);
+    assert(game.score===100,'coin cannot score again');
+    game.reset();assert(!game.level.coins[0].collected&&game.score===0,'full restart clears run');
+  });
   test('Walk into a pit, lose three lives, show game over, restart',()=>{
     for(let i=0;i<3;i++){game.player.x=645;step(150);}
     assert(game.lives===0&&game.state==='lost'&&!game.overlay.hidden,'game over');
