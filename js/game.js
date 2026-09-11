@@ -72,7 +72,7 @@ SkyGame.Game = class {
     if(this.player.y>610){this.loseLife();return;}
     for(const e of this.level.enemies)if(this.player.invincible===0 && SkyGame.Physics.overlaps(this.player,e)){this.loseLife();return;}
     for(const seed of this.level.seeds)if(!seed.collected && SkyGame.Physics.overlaps(this.player,seed)){
-      seed.collected=true;this.score+=10;this.burst(seed.x+11,seed.y+14,10);this.updateHud();
+      seed.collected=true;this.burst(seed.x+11,seed.y+14,10);this.updateHud();
     }
     for(const coin of this.level.coins)if(!coin.collected && SkyGame.Physics.overlaps(this.player,coin)){
       coin.collected=true;this.score+=100;this.updateHud();

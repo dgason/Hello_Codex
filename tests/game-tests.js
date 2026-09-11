@@ -10,9 +10,9 @@
     assert(!game.doubleJump,'ability starts inactive');
   });
   const collectPowerUp=()=>{step(52,1);assert(game.doubleJump&&game.level.powerUp.collected,'pickup');game.player.x=100;};
-  test('Pickup activates HUD and effect without awarding seed points',()=>{
+  test('Pickup activates HUD and effect without awarding points',()=>{
     collectPowerUp();assert(!document.getElementById('double-jump').hidden,'HUD active');
-    assert(game.powerUpFlash>0,'pickup effect');assert(game.score===10,'seed score unchanged');
+    assert(game.powerUpFlash>0,'pickup effect');assert(game.score===0,'power-up and seed do not award coin points');
   });
   test('Extra jump works, third jump is rejected, landing resets it',()=>{
     collectPowerUp();step(20,0,true);step(1,0,true);
@@ -39,9 +39,9 @@
     game.player.x=300;step(14,0,true);assert(game.player.vy>=0&&game.player.y>=376,'ceiling blocks jump');
     Object.assign(game.player,{x:223,y:350,vy:0});step(2,1);assert(game.player.x<=226,'side blocks movement');
   });
-  test('Seed increases score once and remains collected after death',()=>{
-    step(45,1);assert(game.score===10,'collect seed');step(30);assert(game.score===10,'no duplicate collection');
-    game.player.x=650;game.player.y=650;step(1);assert(game.lives===2&&game.score===10&&game.level.seeds[0].collected,'preserve seed after death');
+  test('Seed collection leaves coin score unchanged and persists after death',()=>{
+    step(45,1);assert(game.level.seeds[0].collected&&game.score===0,'collect seed without coin points');step(30);assert(game.score===0,'no seed points');
+    game.player.x=650;game.player.y=650;step(1);assert(game.lives===2&&game.score===0&&game.level.seeds[0].collected,'preserve seed after death');
   });
   test('Coins award 100 immediately, only once, and persist across lost lives',()=>{
     assert(game.score===0&&game.scoreNode.textContent==='0','initial score display');
@@ -54,11 +54,21 @@
     collect();assert(game.score===100,'collected coin cannot score after respawn');
     const second=game.level.coins[1];Object.assign(game.player,{x:second.x,y:second.y,vx:0,vy:0});step(1);
     assert(second.collected&&game.score===200&&game.scoreNode.textContent==='200','each coin adds 100');
+    const third=game.level.coins[2];Object.assign(game.player,{x:third.x,y:third.y,vx:0,vy:0});step(1);
+    assert(game.level.coins.every(c=>c.collected)&&game.score===300&&game.scoreNode.textContent==='300','all three coins total 300');
     game.finish(true);
-    assert(document.getElementById('message-text').textContent.includes('200 points · 0 of'),'coin points do not count as seeds');
+    assert(document.getElementById('message-text').textContent.includes('300 points · 1 of'),'coin points do not count as seeds');
     game.reset();
     assert(game.score===0&&game.scoreNode.textContent==='0'&&game.level.coins.every(c=>!c.collected),'full restart resets coins and score');
     collect();assert(game.score===100&&game.level.coins[0].collected,'coin scores again on new run');
+  });
+  test('Middle high platform allows collecting both seeds from its surface',()=>{
+    Object.assign(game.player,{x:1020,y:303,vx:0,vy:0,grounded:true});
+    step(80,1,true);step(30);
+    assert(game.player.grounded&&game.player.y===238,'land on lowered platform');
+    step(30,-1);step(45,1);
+    assert(game.level.seeds[9].collected&&game.level.seeds[10].collected,'both seeds reachable');
+    assert(game.level.coins[1].collected,'coin remains reachable during jump');
   });
   test('Patrol reverses direction at its bounds',()=>{
     const e=game.level.enemies[0];e.x=e.max;e.direction=1;step(1);assert(e.direction===-1&&e.x===e.max,'reverse');
