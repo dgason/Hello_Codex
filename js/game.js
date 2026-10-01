@@ -7,10 +7,24 @@ SkyGame.Game = class {
     requestAnimationFrame(timestamp=>this.frame(timestamp));
   }
   reset() {
-    this.level=SkyGame.createLevel();this.lives=3;this.score=0;this.camera=0;this.time=0;
+    this.lives=3;this.score=0;this.completedSeeds=0;this.time=0;
     this.doubleJump=false;this.powerUpFlash=0;
+    this.startLevel(0);
+  }
+  startLevel(index) {
+    this.levelIndex=index;this.level=SkyGame.createLevel(index);
+    this.level.powerUp.collected=this.doubleJump;
     this.state='playing';this.particles=[];this.keys.clear();this.jumpQueued=false;
+    this.powerUpFlash=0;this.endDelay=0;
     this.overlay.hidden=true;this.spawn();this.updateHud();
+    this.status.textContent=`Level ${index+1} of ${SkyGame.levelThemes.length}: ${this.level.theme.name}.`;
+  }
+  completeLevel() {
+    if(this.levelIndex===SkyGame.levelThemes.length-1){this.finish(true);return;}
+    this.completedSeeds+=this.level.seeds.filter(seed=>seed.collected).length;
+    this.state='transition';this.player.vx=0;this.keys.clear();this.jumpQueued=false;
+    this.endDelay=1.25;this.burst(this.level.goal.x+32,this.level.goal.y+25,110,true);
+    this.status.textContent=`Level ${this.levelIndex+1} complete! Next: ${SkyGame.levelThemes[this.levelIndex+1].name}.`;
   }
   spawn() {
     this.player={...this.level.spawn,w:34,h:42,vx:0,vy:0,facing:1,grounded:false,coyote:0,jumpBuffer:0,invincible:1.4,doubleJump:this.doubleJump,airJumpUsed:false};
@@ -32,6 +46,7 @@ SkyGame.Game = class {
     this.canvas.addEventListener('pointerdown',()=>this.canvas.focus());
   }
   updateHud() {
+    document.getElementById('level-label').textContent=`Level ${this.levelIndex+1} of ${SkyGame.levelThemes.length} · ${this.level.theme.name}`;
     document.getElementById('double-jump').hidden=!this.doubleJump;
     this.scoreNode.textContent=String(this.score);
     this.livesNode.textContent='♥ '.repeat(this.lives)+'♡ '.repeat(3-this.lives);
@@ -52,9 +67,9 @@ SkyGame.Game = class {
   finish(won) {
     this.state=won?'won':'lost';this.player.vx=0;this.keys.clear();
     if(won)this.burst(this.level.goal.x+32,this.level.goal.y+25,110,true);
-    document.getElementById('eyebrow').textContent=won?'GARDEN COMPLETE':'A LITTLE TUMBLE';
-    document.getElementById('message-title').textContent=won?'You lit up the garden!':'Another sky awaits.';
-    document.getElementById('message-text').textContent=won?`${this.score} points · ${this.level.seeds.filter(seed=>seed.collected).length} of ${this.level.seeds.length} seeds · ${this.lives} lives left`:'Pip is ready for another adventure. Try again!';
+    document.getElementById('eyebrow').textContent=won?'ALL THREE GARDENS COMPLETE':'A LITTLE TUMBLE';
+    document.getElementById('message-title').textContent=won?'Congratulations!':'Another sky awaits.';
+    document.getElementById('message-text').textContent=won?`${this.score} points · ${this.completedSeeds+this.level.seeds.filter(seed=>seed.collected).length} of ${this.level.seeds.length*SkyGame.levelThemes.length} seeds · ${this.lives} lives left`:'Pip is ready for another adventure. Try again!';
     this.status.textContent=won?'Level complete!':'Game over.';
     // Let the beacon and confetti play before revealing the result.
     this.endDelay=won?1.25:.35;
@@ -64,7 +79,9 @@ SkyGame.Game = class {
     for(const p of this.particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=450*dt;p.life-=dt;}
     this.particles=this.particles.filter(p=>p.life>0);
     if(this.state!=='playing') {
-      this.endDelay-=dt;if(this.endDelay<=0 && this.overlay.hidden){this.overlay.hidden=false;document.getElementById('play-again').focus();}
+      this.endDelay-=dt;
+      if(this.state==='transition'){if(this.endDelay<=0)this.startLevel(this.levelIndex+1);return;}
+      if(this.endDelay<=0 && this.overlay.hidden){this.overlay.hidden=false;document.getElementById('play-again').focus();}
       return;
     }
     SkyGame.Physics.movePlayer(this.player,input,this.level.platforms,this.level.width,dt);
@@ -84,7 +101,7 @@ SkyGame.Game = class {
       this.status.textContent='Double-jump active! Press jump again in the air. Lasts until you restart.';
     }
     this.camera=Math.max(0,Math.min(this.level.width-960,this.player.x-320));
-    if(SkyGame.Physics.overlaps(this.player,this.level.goal))this.finish(true);
+    if(SkyGame.Physics.overlaps(this.player,this.level.goal))this.completeLevel();
   }
   frame(timestamp) {
     if(this.lastTime===null)this.lastTime=timestamp;

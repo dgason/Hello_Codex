@@ -106,16 +106,55 @@
     assert(game.lives===0&&game.state==='lost'&&!game.overlay.hidden,'game over');
     game.reset();assert(game.lives===3&&game.score===0&&game.overlay.hidden,'restart');
   });
-  test('Continuous playable route from spawn to beacon without teleporting',()=>{
+  test('Level transitions preserve score, lives and ability and refresh collectibles',()=>{
+    collectPowerUp();
+    for(let index=0;index<3;index++){
+      assert(game.levelIndex===index,'level order');
+      assert(document.getElementById('level-label').textContent.includes(`Level ${index+1} of 3`),'level HUD');
+      assert(game.level.coins.every(c=>!c.collected),'fresh coins');
+      for(const coin of game.level.coins){Object.assign(game.player,{x:coin.x,y:coin.y,vy:0});step(1);}
+      assert(game.score===(index+1)*300,'cumulative coin score');
+      Object.assign(game.player,{x:game.level.goal.x,y:410,vy:0});step(1);
+      assert(game.state===(index<2?'transition':'won'),'only final beacon wins');
+      assert(game.overlay.hidden,'no premature overlay');
+      step(160);
+      assert(game.lives===3&&game.doubleJump&&game.player.doubleJump,'carry lives and ability');
+      assert(game.scoreNode.textContent===String((index+1)*300),'score HUD retained');
+    }
+    assert(!game.overlay.hidden,'final overlay');
+    assert(document.getElementById('message-title').textContent==='Congratulations!','congratulations');
+    assert(document.getElementById('message-text').textContent.includes('900 points'),'final total');
+    game.reset();
+    assert(game.levelIndex===0&&game.score===0&&game.lives===3&&!game.doubleJump&&game.overlay.hidden,'restart whole adventure');
+  });
+  test('Death in a later level respawns there and game over restarts at level one',()=>{
+    game.startLevel(1);game.score=100;
+    for(let i=0;i<3;i++){
+      game.player.y=650;step(1);
+      assert(game.levelIndex===1&&game.score===100,'retain current level and score');
+      if(i<2)assert(game.player.x===game.level.spawn.x,'respawn at current start');
+    }
+    step(60);assert(game.state==='lost'&&!game.overlay.hidden,'later level game over');
+    game.reset();assert(game.levelIndex===0&&game.score===0,'restart at first level');
+  });
+  test('Continuous playable route through all three gardens without teleporting',()=>{
     const walkTo=x=>{for(let i=0;i<1000&&game.player.x<x&&game.state==='playing';i++)step(1,1);};
     const leapTo=x=>{step(1,1,true);walkTo(x);for(let i=0;i<160&&!game.player.grounded;i++)step(1);};
-    for(const [from,to] of [[600,780],[1160,1280],[1300,1500],[1840,2000],[2025,2220]]){
-      walkTo(from);leapTo(to);
+    const palettes=new Set();
+    for(let index=0;index<3;index++){
+      assert(game.levelIndex===index,'next level starts');
+      palettes.add(game.level.theme.sky[0]);game.renderer.draw(game);
+      for(const [from,to] of [[600,780],[1160,1280],[1300,1500],[1840,2000],[2025,2220]]){
+        walkTo(from);leapTo(to);
+      }
+      walkTo(2800);
+      assert(game.state===(index<2?'transition':'won'),`level ${index+1} route ended at ${game.player.x.toFixed(0)}, lives ${game.lives}`);
+      assert(game.lives===3,'route avoids enemies and pits');assert(game.particles.length>0,'celebration');
+      if(index<2){while(game.state==='transition')step(1);step(2);}
+      else step(180);
+      assert(game.overlay.hidden===(index<2),'completion dialog only after third level');
     }
-    walkTo(2800);
-    assert(game.state==='won',`route ended at ${game.player.x.toFixed(0)}, lives ${game.lives}`);
-    assert(game.lives===3,'route avoids enemies and pits');assert(game.particles.length>0,'celebration');
-    step(180);assert(!game.overlay.hidden,'completion dialog');
+    assert(palettes.size===3,'distinct garden palettes');
   });
   game.reset();
   if(typeof process!=='undefined'){console.log(results.join('\n'));if(results.some(r=>r.startsWith('FAIL')))process.exitCode=1;}

@@ -4,33 +4,33 @@ SkyGame.Renderer = class {
   ellipse(x,y,rx,ry,color) {const c=this.ctx;c.fillStyle=color;c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fill();}
   rounded(x,y,w,h,r,color) {const c=this.ctx;c.fillStyle=color;c.beginPath();c.roundRect(x,y,w,h,r);c.fill();}
   text(label,x,y,size,color,align='left') {const c=this.ctx;c.fillStyle=color;c.font=`600 ${size}px system-ui`;c.textAlign=align;c.fillText(label,x,y);}
-  background(camera,t) {
+  background(camera,t,theme) {
     const c=this.ctx;
-    const sky=c.createLinearGradient(0,0,0,540);sky.addColorStop(0,'#afe0e9');sky.addColorStop(1,'#e7f4de');c.fillStyle=sky;c.fillRect(0,0,960,540);
+    const sky=c.createLinearGradient(0,0,0,540);sky.addColorStop(0,theme.sky[0]);sky.addColorStop(1,theme.sky[1]);c.fillStyle=sky;c.fillRect(0,0,960,540);
     this.ellipse(770-camera*.04,95,49,49,'#fff7c8');this.ellipse(770-camera*.04,95,66,66,'#fff9d52e');
     for(let i=-1;i<8;i++) {
       const x=i*245-camera*.17+Math.sin(t*.1+i)*14;
       this.ellipse(x,104+(i%3)*31,49,15,'#f5ffffb8');this.ellipse(x-18,97+(i%3)*31,24,21,'#f5ffffb8');
     }
     for(let layer=0;layer<2;layer++) {
-      c.fillStyle=layer?'#86cbbb':'#a1d4ca';c.beginPath();c.moveTo(0,540);
+      c.fillStyle=theme.hills[layer];c.beginPath();c.moveTo(0,540);
       for(let x=-30;x<=990;x+=10){const world=x+camera*(layer?.28:.12);c.lineTo(x,335+layer*49+Math.sin(world*.007+layer*3)*36+Math.sin(world*.016)*13);}
       c.lineTo(990,540);c.fill();
     }
     for(let i=0;i<20;i++){const x=((i*137-camera*.4+t*8)%1000+1000)%1000;const y=170+(i*53)%255+Math.sin(t+i)*7;this.ellipse(x,y,2,2,'#fffce59c');}
   }
-  platform(p,t) {
+  platform(p,t,theme) {
     const c=this.ctx,ground=p.h>40;
-    this.rounded(p.x,p.y,p.w,p.h,ground?12:9,ground?'#b4835e':'#ba8c68');
+    this.rounded(p.x,p.y,p.w,p.h,ground?12:9,ground?theme.soil:theme.ledge);
     c.save();c.beginPath();c.rect(p.x,p.y+15,p.w,p.h-15);c.clip();
-    for(let i=0;i<p.w;i+=35) this.rounded(p.x+i+10,p.y+31+(i%3)*10,8,5,2,'#d3a682');
+    for(let i=0;i<p.w;i+=35) this.rounded(p.x+i+10,p.y+31+(i%3)*10,8,5,2,theme.flecks);
     c.restore();
-    this.rounded(p.x,p.y,p.w,18,8,'#409a78');this.rounded(p.x+2,p.y,p.w-4,7,4,'#7fcb85');
+    this.rounded(p.x,p.y,p.w,18,8,theme.grass);this.rounded(p.x+2,p.y,p.w-4,7,4,theme.tips);
     for(let i=18;i<p.w-10;i+=59){const x=p.x+i;
-      c.strokeStyle='#419c75';c.lineWidth=2;c.beginPath();c.moveTo(x,p.y);c.quadraticCurveTo(x-3,p.y-8,x+Math.sin(t*1.7+i)*3,p.y-13);c.stroke();
+      c.strokeStyle=theme.grass;c.lineWidth=2;c.beginPath();c.moveTo(x,p.y);c.quadraticCurveTo(x-3,p.y-8,x+Math.sin(t*1.7+i)*3,p.y-13);c.stroke();
       if(i%2===0){this.ellipse(x+Math.sin(t*1.7+i)*3,p.y-14,4,4,'#fff2bb');this.ellipse(x+Math.sin(t*1.7+i)*3,p.y-14,1.5,1.5,'#e7ae54');}
     }
-    if(!ground){c.strokeStyle='#5eaa83';c.lineWidth=3;c.beginPath();c.moveTo(p.x+25,p.y+p.h);c.quadraticCurveTo(p.x+32+Math.sin(t)*4,p.y+57,p.x+22,p.y+63);c.stroke();this.ellipse(p.x+28,p.y+45,7,3,'#5eaa83');}
+    if(!ground){c.strokeStyle=theme.vine;c.lineWidth=3;c.beginPath();c.moveTo(p.x+25,p.y+p.h);c.quadraticCurveTo(p.x+32+Math.sin(t)*4,p.y+57,p.x+22,p.y+63);c.stroke();this.ellipse(p.x+28,p.y+45,7,3,theme.vine);}
   }
   seed(seed,t,index) {
     if(seed.collected)return;const c=this.ctx,x=seed.x+11,y=seed.y+14+Math.sin(t*3+index)*5;
@@ -85,14 +85,14 @@ SkyGame.Renderer = class {
   }
   draw(game) {
     const {camera,time:t,level,player,particles}=game,c=this.ctx;
-    c.clearRect(0,0,960,540);this.background(camera,t);c.save();c.translate(-camera,0);
-    for(const p of level.platforms)this.platform(p,t);
-    this.text('THE FLOATING GARDEN',65,215,11,'#558c87');this.text('Every adventure starts with a leap.',65,241,17,'#37766e');
+    c.clearRect(0,0,960,540);this.background(camera,t,level.theme);c.save();c.translate(-camera,0);
+    for(const p of level.platforms)this.platform(p,t,level.theme);
+    this.text(level.theme.name.toUpperCase(),65,215,11,level.theme.ink);this.text(level.theme.greeting,65,241,17,level.theme.ink);
     this.text('PIP',89,player.x<130?376:390,10,'#427d72','center');
     this.text('Mind the gap  ↗',553,402,12,'#427d72');
     this.powerUp(level.powerUp,t);
     level.coins.forEach(coin=>this.coin(coin));
-    level.seeds.forEach((s,i)=>this.seed(s,t,i));level.enemies.forEach(e=>this.enemy(e,t));this.goal(level.goal,t,game.state==='won');this.player(player,t);
+    level.seeds.forEach((s,i)=>this.seed(s,t,i));level.enemies.forEach(e=>this.enemy(e,t));this.goal(level.goal,t,game.state==='won'||game.state==='transition');this.player(player,t);
     if(game.powerUpFlash>0) {
       const progress=1-game.powerUpFlash;
       c.save();c.globalAlpha=game.powerUpFlash;c.strokeStyle='#aa73e6';c.lineWidth=5;
