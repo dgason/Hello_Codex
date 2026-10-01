@@ -12,7 +12,7 @@
   <main>
     <header><div class="brand"><span class="brand-mark">✦</span><div><h1>Pip & the Sky Seeds</h1><p>A little leap into the blue.</p></div></div><span class="edition">A TINY CANVAS ADVENTURE</span></header>
     <section class="game-shell" aria-label="Pip platform game">
-      <div class="toolbar"><div class="level"><span class="dot"></span>01 <span class="separator">/</span> The Floating Garden</div><div class="stats"><span id="double-jump" hidden>⇈ DOUBLE JUMP</span><span>LIVES <strong id="lives" aria-label="3 lives">♥ ♥ ♥</strong></span><button id="restart" title="Restart the adventure">↻ <span>Restart</span></button></div></div>
+      <div class="toolbar"><div class="level"><span class="dot"></span><span id="level-label" aria-live="polite">Level 1 of 3 · The Floating Garden</span></div><div class="stats"><span id="double-jump" hidden>⇈ DOUBLE JUMP</span><span>LIVES <strong id="lives" aria-label="3 lives">♥ ♥ ♥</strong></span><button id="restart" title="Restart the adventure">↻ <span>Restart</span></button></div></div>
       <div class="stage">
         <div class="score-display" role="status" aria-live="polite" aria-atomic="true">SCORE <strong id="score">0</strong></div>
         <canvas id="game" width="960" height="540" tabindex="0" aria-label="Move Pip with arrows or A and D. Jump with Space or Up. Collect seeds, avoid prickles, and reach the beacon.">Your browser needs canvas support to play.</canvas>
